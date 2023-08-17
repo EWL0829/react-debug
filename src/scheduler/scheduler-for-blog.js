@@ -28,7 +28,7 @@ if (process.env.NODE_ENV !== "production") {
     let enableProfiling = false; // 是否允许启用性能分析
     let frameYieldMs = 5; // 控制权交还给主进程的时间限制 5ms
 
-    // * 小顶堆排序算法与相关的一些操作方法
+    // 小顶堆排序算法与相关的一些操作方法
     function push(heap, node) {
       let index = heap.length;
       heap.push(node);
@@ -111,34 +111,34 @@ if (process.env.NODE_ENV !== "production") {
 
 
     // TODO: Use symbols? This line of comment was written by React developers.
-    let ImmediatePriority = 1; // * 立即执行优先级 -1ms 立刻过期
-    let UserBlockingPriority = 2; // * 用户阻塞优先级 250ms后过期
-    let NormalPriority = 3; // * 普通优先级, 作为默认值在预设的时候使用 5000ms后过期
-    let LowPriority = 4; // * 低优先级 10000ms后过期
-    let IdlePriority = 5; // * 线程空闲优先级 maxSigned31BitInt永不过期 2**30 - 1 表示最低优先级，通常用于处理一些可以延迟执行的任务，例如除了用户交互以外的后台计算、网络请求
+    let ImmediatePriority = 1; // 立即执行优先级 -1ms 立刻过期
+    let UserBlockingPriority = 2; // 用户阻塞优先级 250ms后过期
+    let NormalPriority = 3; // 普通优先级, 作为默认值在预设的时候使用 5000ms后过期
+    let LowPriority = 4; // 低优先级 10000ms后过期
+    let IdlePriority = 5; // 线程空闲优先级 maxSigned31BitInt永不过期 2**30 - 1 表示最低优先级，通常用于处理一些可以延迟执行的任务，例如除了用户交互以外的后台计算、网络请求
 
-    // ? this function was just put here and did nothing
+    // this function was just put here and did nothing
     function markTaskErrored(task, ms) {
     }
 
-    // * 当前performance功能及相关的now函数是否可以使用
+    // 当前performance功能及相关的now函数是否可以使用
     let hasPerformanceNow = typeof performance === 'object' && typeof performance.now === 'function';
 
     if (hasPerformanceNow) {
       let localPerformance = performance;
 
-      // * 在浏览器中，`performance.now()`方法返回的是一个`DOMHighResTimeStamp`，它表示当前时间与性能测量时钟开始的时间之间的毫秒数。这个返回值精确到微秒级别，并且是一个浮点数。
-      // * `performance.now()`方法通常被用于进行性能测量和计时，特别是在浏览器中执行的代码的执行时间。它可以用来测量函数执行时间、操作的持续时间，或者用来比较不同算法或方法的性能。
-      // * 需要注意的是，`performance.now()`返回的值是相对于性能测量开始时的时间，并不与系统的实际时间或日期相关。而且，它是以浏览器启动后的某一点为基准的，浏览器重启会重置这一起点。
-      // * 所以，`performance.now()`的返回值在不同的浏览器上可能有差异，并且不能用于获取精确的日期和时间。
-      // * 如果需要获取当前的系统日期和时间，应该使用`Date`对象，而不是`performance.now()`方法。
+      // 在浏览器中，`performance.now()`方法返回的是一个`DOMHighResTimeStamp`，它表示当前时间与性能测量时钟开始的时间之间的毫秒数。这个返回值精确到微秒级别，并且是一个浮点数。
+      // `performance.now()`方法通常被用于进行性能测量和计时，特别是在浏览器中执行的代码的执行时间。它可以用来测量函数执行时间、操作的持续时间，或者用来比较不同算法或方法的性能。
+      // 需要注意的是，`performance.now()`返回的值是相对于性能测量开始时的时间，并不与系统的实际时间或日期相关。而且，它是以浏览器启动后的某一点为基准的，浏览器重启会重置这一起点。
+      // 所以，`performance.now()`的返回值在不同的浏览器上可能有差异，并且不能用于获取精确的日期和时间。
+      // 如果需要获取当前的系统日期和时间，应该使用`Date`对象，而不是`performance.now()`方法。
       exports.unstable_now = function () {
         return localPerformance.now();
       };
     } else {
-      // ! 不支持performance的情况下回退到Date对象
+      // 不支持performance的情况下回退到Date对象
       let localDate = Date;
-      let initialTime = localDate.now(); // * 先记录一个scheduler开始执行的时间，然后将函数执行到的当前时间与之相减得到差值
+      let initialTime = localDate.now(); // 先记录一个scheduler开始执行的时间，然后将函数执行到的当前时间与之相减得到差值
 
       exports.unstable_now = function () {
         return localDate.now() - initialTime;
@@ -148,7 +148,7 @@ if (process.env.NODE_ENV !== "production") {
       // 0b111111111111111111111111111111
 
 
-    // ! 和优先级对应的一系列超时时间
+    // 和优先级对应的一系列超时时间
     let maxSigned31BitInt = 1073741823; // Times out immediately 立即超时 (2**30 - 1 === 1073741823) 0b01000000000000000000000000000000
     let IMMEDIATE_PRIORITY_TIMEOUT = -1; // Eventually times out
     let USER_BLOCKING_PRIORITY_TIMEOUT = 250; // 用户操作优先级超时时间
@@ -156,16 +156,16 @@ if (process.env.NODE_ENV !== "production") {
     let LOW_PRIORITY_TIMEOUT = 10000; // Never times out -- Maybe 低优先级永远不会超时？？
     let IDLE_PRIORITY_TIMEOUT = maxSigned31BitInt; // Tasks are stored on a min heap
 
-    // ! 维护两个队列，一个为普通任务队列，一个为延迟任务队列
+    // 维护两个队列，一个为普通任务队列，一个为延迟任务队列
     let taskQueue = [];
     let timerQueue = []; // Incrementing id counter. Used to maintain insertion order.
 
-    let taskIdCounter = 1; // * 任务被加到队列中的顺序 Pausing the scheduler is useful for debugging.
+    let taskIdCounter = 1; // 任务被加到队列中的顺序 Pausing the scheduler is useful for debugging.
     let currentTask = null;
     let currentPriorityLevel = NormalPriority; //* 默认的优先级 This is set while performing work, to prevent re-entrance.
 
-    let isPerformingWork = false; // * 当前调度器是否正在调度任务中
-    let isHostCallbackScheduled = false; // * 调度器是否已经安排了一个hostCallback
+    let isPerformingWork = false; // 当前调度器是否正在调度任务中
+    let isHostCallbackScheduled = false; // 调度器是否已经安排了一个hostCallback
     let isHostTimeoutScheduled = false; //* 调度器是否已经安排了一个超时的hostCallback. Capture local references to native APIs, in case a polyfill overrides them.
 
     let localSetTimeout = typeof setTimeout === 'function' ? setTimeout : null;
@@ -174,79 +174,79 @@ if (process.env.NODE_ENV !== "production") {
 
     // The isInputPending() method of the Scheduling interface allows you to check whether there are pending input
     // events in the event queue, indicating that the user is attempting to interact with the page
-    // ! unused variable
+    // unused variable
     let isInputPending = typeof navigator !== 'undefined' && navigator.scheduling !== undefined && navigator.scheduling.isInputPending !== undefined ? navigator.scheduling.isInputPending.bind(navigator.scheduling) : null;
 
-    // ! ===== 从延时任务队列中不断取出到期需要触发的延时任务，将其放到普通任务队列中等待被取出执行 =====
+    // ===== 从延时任务队列中不断取出到期需要触发的延时任务，将其放到普通任务队列中等待被取出执行 =====
     function advanceTimers(currentTime) {
       // Check for tasks that are no longer delayed and add them to the queue.
       let timer = peek(timerQueue);
 
       while (timer !== null) {
         if (timer.callback === null) {
-          // * Timer was cancelled. 延时任务被取消了，那么就将该任务直接从队列中pop出去即可
-          // * unstable_cancelCallback方法就是用来做任务取消的，具体的操作就是将task置为null
+          // Timer was cancelled. 延时任务被取消了，那么就将该任务直接从队列中pop出去即可
+          // unstable_cancelCallback方法就是用来做任务取消的，具体的操作就是将task置为null
           pop(timerQueue);
         } else if (timer.startTime <= currentTime) {
-          // * Timer fired. Transfer to the task queue. 延时任务已经被触发了，将延时任务从延时任务队列中pop出来
-          // ! 延时任务队列中任务是以开始时间进行排序的，而普通任务队列中是以过期时间进行排序的，过期时间越小的排在越靠前的位置
+          // Timer fired. Transfer to the task queue. 延时任务已经被触发了，将延时任务从延时任务队列中pop出来
+          // 延时任务队列中任务是以开始时间进行排序的，而普通任务队列中是以过期时间进行排序的，过期时间越小的排在越靠前的位置
 
           pop(timerQueue);
           timer.sortIndex = timer.expirationTime;
           push(taskQueue, timer);
         } else {
-          // * Timer还没有到被触发的时间，需要继续处于pending状态
+          // Timer还没有到被触发的时间，需要继续处于pending状态
           // Remaining timers are pending.
           return;
         }
 
-        // * 从延时任务队列中获取新的延时任务并循环上述逻辑，直到延时任务队列为空队列为止
+        // 从延时任务队列中获取新的延时任务并循环上述逻辑，直到延时任务队列为空队列为止
         timer = peek(timerQueue);
       }
     }
 
-    // ! ===== 处理超时任务 =====
+    // ===== 处理超时任务 =====
     function handleTimeout(currentTime) {
-      isHostTimeoutScheduled = false; // * 将「当前是否安排了一个超时的hostCallback」设置为false
-      advanceTimers(currentTime); // * 将延时任务队列中需要被取出执行的延时任务放到普通任务队列中
+      isHostTimeoutScheduled = false; // 将「当前是否安排了一个超时的hostCallback」设置为false
+      advanceTimers(currentTime); // 将延时任务队列中需要被取出执行的延时任务放到普通任务队列中
 
       if (!isHostCallbackScheduled) {
-        // ! heap的特点是如果根节点为空，则说明整棵树都是空的，可以拿来做整个队列是否为空的判断依据
-        if (peek(taskQueue) !== null) { // * 当普通任务队列不为空时
-          isHostCallbackScheduled = true; // * 将「调度器是否安排了一个hostCallback」置为true
-          requestHostCallback(flushWork); // * 这里会发起一系列的逻辑，简单来讲就是调用了 performWorkUntilDeadline
+        // heap的特点是如果根节点为空，则说明整棵树都是空的，可以拿来做整个队列是否为空的判断依据
+        if (peek(taskQueue) !== null) { // 当普通任务队列不为空时
+          isHostCallbackScheduled = true; // 将「调度器是否安排了一个hostCallback」置为true
+          requestHostCallback(flushWork); // 这里会发起一系列的逻辑，简单来讲就是调用了 performWorkUntilDeadline
         } else {
           let firstTimer = peek(timerQueue);
 
           if (firstTimer !== null) {
-            // * setTimeout(handleTimeout, firstTimer.startTime - currentTime);
+            // setTimeout(handleTimeout, firstTimer.startTime - currentTime);
             requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
           }
         }
       }
     }
 
-    // ! ===== 用于手动触发调度器立即执行所有待处理的任务 =====
+    // ===== 用于手动触发调度器立即执行所有待处理的任务 =====
     function flushWork(hasTimeRemaining, initialTime) {
       isHostCallbackScheduled = false;
-      // * 有超时任务被安排上
+      // 有超时任务被安排上
       if (isHostTimeoutScheduled) {
         // We scheduled a timeout but it's no longer needed. Cancel it.
         isHostTimeoutScheduled = false;
-        cancelHostTimeout(); // * callback = null
+        cancelHostTimeout(); // callback = null
       }
 
       isPerformingWork = true;
-      let previousPriorityLevel = currentPriorityLevel; // * 当前执行的任务的优先级
+      let previousPriorityLevel = currentPriorityLevel; // 当前执行的任务的优先级
 
       try {
-        // * 如果允许进行性能分析
+        // 如果允许进行性能分析
         if (enableProfiling) {
           try {
             return workLoop(hasTimeRemaining, initialTime);
           } catch (error) {
 
-            // ! ===== 这块是给enableProfiling用的，暂时先不看 =====
+            // ===== 这块是给enableProfiling用的，暂时先不看 =====
             if (currentTask !== null) {
               let currentTime = exports.unstable_now();
               markTaskErrored(currentTask, currentTime);
@@ -254,7 +254,7 @@ if (process.env.NODE_ENV !== "production") {
             }
 
             throw error;
-            // ! ===== 这块是给enableProfiling用的，暂时先不看 =====
+            // ===== 这块是给enableProfiling用的，暂时先不看 =====
           }
         } else {
           // No catch in prod code path.
@@ -267,13 +267,13 @@ if (process.env.NODE_ENV !== "production") {
       }
     }
 
-    // ! ===== 实现调度器的工作循环 =====
+    // ===== 实现调度器的工作循环 =====
     function workLoop(hasTimeRemaining, initialTime) {
       let currentTime = initialTime;
       advanceTimers(currentTime); // 从timerQueue中获取peek 然后塞到taskQueue中
       currentTask = peek(taskQueue); // 从taskQueue中获取peek，二叉树顶部的根节点
 
-      // ! enableSchedulerDebugging是一个用于调试调度程序行为的函数。它允许开发人员查看调度器内部的一些信息，以便更好地理解调度器的工作原理。
+      // enableSchedulerDebugging是一个用于调试调度程序行为的函数。它允许开发人员查看调度器内部的一些信息，以便更好地理解调度器的工作原理。
       /* import React from 'react';
       /* import { enableSchedulerDebugging } from 'react-dom';
       /*
@@ -286,36 +286,36 @@ if (process.env.NODE_ENV !== "production") {
       while (currentTask !== null && !(enableSchedulerDebugging )) {
         if (currentTask.expirationTime > currentTime && (!hasTimeRemaining || shouldYieldToHost())) {
           // This currentTask hasn't expired, and we've reached the deadline.
-          // * 当前的任务并没有过期，但是我们没有剩余时间或者执行任务耗费的时间已经超过了5ms（frameInterval），需要将控制权还给主进程，跳出循环并且返回true
+          // 当前的任务并没有过期，但是我们没有剩余时间或者执行任务耗费的时间已经超过了5ms（frameInterval），需要将控制权还给主进程，跳出循环并且返回true
           break;
         }
 
-        let callback = currentTask.callback; // ! 先取值保存到callback中然后将currentTask.callback置空
+        let callback = currentTask.callback; // 先取值保存到callback中然后将currentTask.callback置空
 
         if (typeof callback === 'function') {
           currentTask.callback = null;
           currentPriorityLevel = currentTask.priorityLevel;
-          let didUserCallbackTimeout = currentTask.expirationTime <= currentTime; // * 当前Task的过期时间小于当前时间，说明该任务已经过期了，也就是超时了
+          let didUserCallbackTimeout = currentTask.expirationTime <= currentTime; // 当前Task的过期时间小于当前时间，说明该任务已经过期了，也就是超时了
 
           let continuationCallback = callback(didUserCallbackTimeout);
           currentTime = exports.unstable_now();
 
-          // * Here we see why the return value of tasks matter
-          // * See that under this branch, the task is not popped!
-          // * continuationCallback为函数时，currentTask.callback再被赋回原值，并且不会被pop出去
-          // * 如果不为函数，则
+          // Here we see why the return value of tasks matter
+          // See that under this branch, the task is not popped!
+          // continuationCallback为函数时，currentTask.callback再被赋回原值，并且不会被pop出去
+          // 如果不为函数，则
           if (typeof continuationCallback === 'function') {
             currentTask.callback = continuationCallback;
           } else {
-            // ? 这里为什么还要做一次判断
+            // 这里为什么还要做一次判断
             if (currentTask === peek(taskQueue)) {
               pop(taskQueue);
             }
           }
 
-          advanceTimers(currentTime); // * 从timerQueue中获取peek 然后塞到taskQueue中
+          advanceTimers(currentTime); // 从timerQueue中获取peek 然后塞到taskQueue中
         } else {
-          // * ===== 当callback不为function时，说明该任务已经被cancel掉了？ =====
+          // ===== 当callback不为function时，说明该任务已经被cancel掉了？ =====
           pop(taskQueue);
         }
 
@@ -329,7 +329,7 @@ if (process.env.NODE_ENV !== "production") {
         let firstTimer = peek(timerQueue);
 
         if (firstTimer !== null) {
-          // * 这里实际做的操作就是setTimeout(handleTimeout, firstTimer.startTime - currentTime)
+          // 这里实际做的操作就是setTimeout(handleTimeout, firstTimer.startTime - currentTime)
           requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
         }
 
@@ -337,7 +337,7 @@ if (process.env.NODE_ENV !== "production") {
       }
     }
 
-    // ! ===== 手动指定一个优先级来执行回调函数 =====
+    // ===== 手动指定一个优先级来执行回调函数 =====
     function unstable_runWithPriority(priorityLevel, eventHandler) {
       switch (priorityLevel) {
         case ImmediatePriority:
@@ -346,63 +346,63 @@ if (process.env.NODE_ENV !== "production") {
         case LowPriority:
         case IdlePriority:
           break;
-        // * 没有命中默认给出的这些特殊优先级值时，就直接使用默认的NormalPriority
+        // 没有命中默认给出的这些特殊优先级值时，就直接使用默认的NormalPriority
         default:
           priorityLevel = NormalPriority;
       }
 
-      let previousPriorityLevel = currentPriorityLevel; // * 将上一次执行的task的优先级记录下来
+      let previousPriorityLevel = currentPriorityLevel; // 将上一次执行的task的优先级记录下来
       currentPriorityLevel = priorityLevel;
 
       try {
-        // * 使用指定的priorityLevel来执行eventHandler
+        // 使用指定的priorityLevel来执行eventHandler
         return eventHandler();
       } finally {
-        // ! ===== 在执行完eventHandler之后需要手动将优先级恢复到执行该指定优先级的回调任务之前 =====
-        // ? ===== 猜测这个是可以用来插入新任务的API =====
+        // ===== 在执行完eventHandler之后需要手动将优先级恢复到执行该指定优先级的回调任务之前 =====
+        // ===== 猜测这个是可以用来插入新任务的API =====
         currentPriorityLevel = previousPriorityLevel;
       }
     }
 
-    // ! ===== 用于表示下一个调度任务优先级的标识 =====
+    // ===== 用于表示下一个调度任务优先级的标识 =====
     function unstable_next(eventHandler) {
       let priorityLevel;
 
-      // * ===== priorityLevel总是使用小于等于NormalPriority的优先级 =====
+      // ===== priorityLevel总是使用小于等于NormalPriority的优先级 =====
       switch (currentPriorityLevel) {
-        case ImmediatePriority: // * ===== -1 =====
-        case UserBlockingPriority: // * ===== 250ms =====
-        case NormalPriority: // * ===== 5000ms =====
+        case ImmediatePriority: // ===== -1 =====
+        case UserBlockingPriority: // ===== 250ms =====
+        case NormalPriority: // ===== 5000ms =====
           // Shift down to normal priority
           priorityLevel = NormalPriority;
           break;
 
-        // * ===== LowPriority 和 IdlePriority 都会被直接使用到priorityLevel上 =====
+        // ===== LowPriority 和 IdlePriority 都会被直接使用到priorityLevel上 =====
         default:
           // Anything lower than normal priority should remain at the current level.
           priorityLevel = currentPriorityLevel;
           break;
       }
 
-      // * ===== 这一类的操作都是类似的，先记录下执行eventHandler之前的优先级，然后在finally中将优先级恢复 =====
+      // ===== 这一类的操作都是类似的，先记录下执行eventHandler之前的优先级，然后在finally中将优先级恢复 =====
       let previousPriorityLevel = currentPriorityLevel;
       currentPriorityLevel = priorityLevel;
 
       try {
-        // * 执行eventHandler的时候，优先级已经被降低到了NormalPriority及以下
+        // 执行eventHandler的时候，优先级已经被降低到了NormalPriority及以下
         return eventHandler();
       } finally {
         currentPriorityLevel = previousPriorityLevel;
       }
     }
 
-    // ! ===== 是一个返回闭包的runWithPriority，没有什么大的差别 =====
+    // ===== 是一个返回闭包的runWithPriority，没有什么大的差别 =====
     function unstable_wrapCallback(callback) {
       let parentPriorityLevel = currentPriorityLevel;
       return function () {
         // This is a fork of runWithPriority, inlined for performance.
         let previousPriorityLevel = currentPriorityLevel;
-        // ! 返回了一个闭包函数，保存了parentPriorityLevel，然后使用parentPriorityLevel来标记callback的执行优先级
+        // 返回了一个闭包函数，保存了parentPriorityLevel，然后使用parentPriorityLevel来标记callback的执行优先级
         currentPriorityLevel = parentPriorityLevel;
 
         try {
@@ -413,7 +413,7 @@ if (process.env.NODE_ENV !== "production") {
       };
     }
 
-    // ! ===== 使用固定的优先级/延迟时间来调度callback函数，注意这里是调度而非执行 =====
+    // ===== 使用固定的优先级/延迟时间来调度callback函数，注意这里是调度而非执行 =====
     // 根据任务的优先级来计算任务的超时时间
     // priorityLevel是优先级，callback是任务，options可以通过指定delay来延迟执行我们的任务
     function unstable_scheduleCallback(priorityLevel, callback, options) {
@@ -512,44 +512,44 @@ if (process.env.NODE_ENV !== "production") {
       return newTask;
     }
 
-    // * 空函数
+    // 空函数
     function unstable_pauseExecution() {
     }
 
-    // ! ===== 取消打断状态，使 scheduler 恢复处理任务节点 =====
+    // ===== 取消打断状态，使 scheduler 恢复处理任务节点 =====
     function unstable_continueExecution() {
       if (!isHostCallbackScheduled && !isPerformingWork) {
         isHostCallbackScheduled = true;
-        // * ===== 直接触发所有待处理的任务 =====
+        // ===== 直接触发所有待处理的任务 =====
         requestHostCallback(flushWork);
       }
     }
 
-    // ! 返回taskQueue普通任务队列的根节点
+    // 返回taskQueue普通任务队列的根节点
     function unstable_getFirstCallbackNode() {
       return peek(taskQueue);
     }
 
-    // ! 取消任务且remove from the queue because you can't remove arbitrary nodes from an array based heap, only the first one.
+    // 取消任务且remove from the queue because you can't remove arbitrary nodes from an array based heap, only the first one.
     function unstable_cancelCallback(task) {
       // remove from the queue because you can't remove arbitrary nodes from an array based heap, only the first one.)
       task.callback = null;
     }
 
-    // ! ===== 获取当前的任务优先级 =====
+    // ===== 获取当前的任务优先级 =====
     function unstable_getCurrentPriorityLevel() {
       return currentPriorityLevel;
     }
 
     let isMessageLoopRunning = false;
     let scheduledHostCallback = null;
-    // * 调度器定期让出执行权，以防止主线程上有其他任务，比如用户事件。默认情况下，它在每一帧中多次让出执行权。它不试图与帧边界对齐，因为大多数任务不需要与帧对齐。对于需要与帧对齐的任务，请使用 requestAnimationFrame。
+    // 调度器定期让出执行权，以防止主线程上有其他任务，比如用户事件。默认情况下，它在每一帧中多次让出执行权。它不试图与帧边界对齐，因为大多数任务不需要与帧对齐。对于需要与帧对齐的任务，请使用 requestAnimationFrame。
     let taskTimeoutID = -1; // Scheduler periodically yields in case there is other work on the main thread, like user events. By default, it yields multiple times per frame. It does not attempt to align with frame boundaries, since most tasks don't need to be frame aligned; for those that do, use requestAnimationFrame.
 
     let frameInterval = frameYieldMs;
     let startTime = -1;
 
-    // ! ===== 是否将控制权交还给主线程(防止渲染被阻塞，导致掉帧卡顿) =====
+    // ===== 是否将控制权交还给主线程(防止渲染被阻塞，导致掉帧卡顿) =====
     function shouldYieldToHost() {
       // 时间流逝 timeElapsed = 当前时间 - 起始时间 如果时间差值大于5ms则需要将控制权交还给主线程
       let timeElapsed = exports.unstable_now() - startTime;
@@ -564,12 +564,12 @@ if (process.env.NODE_ENV !== "production") {
       return true;
     }
 
-    // * 空函数
+    // 空函数
     function requestPaint() {
 
     }
 
-    // ! 强制切换frameInterval，在指定的帧率下需要做细微的调整
+    // 强制切换frameInterval，在指定的帧率下需要做细微的调整
     function forceFrameRate(fps) {
       if (fps < 0 || fps > 125) {
         // Using console['error'] to evade Babel and ESLint
@@ -579,7 +579,7 @@ if (process.env.NODE_ENV !== "production") {
 
       if (fps > 0) {
         // fps
-        // * 例如fps 为 60 frame/s时，frameInterval = 16
+        // 例如fps 为 60 frame/s时，frameInterval = 16
         frameInterval = Math.floor(1000 / fps);
       } else {
         // reset the framerate
@@ -587,7 +587,7 @@ if (process.env.NODE_ENV !== "production") {
       }
     }
 
-    // ! ===== 在截止时间之前执行work =====
+    // ===== 在截止时间之前执行work =====
     let performWorkUntilDeadline = function () {
       if (scheduledHostCallback !== null) {
         let currentTime = exports.unstable_now(); // Keep track of the start time so we can measure how long the main thread has been blocked. 不断跟踪开始时间我们才能测量出主线程被阻塞的时间
@@ -603,12 +603,12 @@ if (process.env.NODE_ENV !== "production") {
         let hasMoreWork = true;
 
         try {
-          // * 这里真正执行的 scheduledHostCallback 是flushWork，因为 requestHostCallback(flushWork) 的调用会将
-          // * flushWork赋值给scheduledHostCallback，而hasTimeRemaining为true， currentTime为performance.now()
-          // * 或者Date对象计算出的差值
+          // 这里真正执行的 scheduledHostCallback 是flushWork，因为 requestHostCallback(flushWork) 的调用会将
+          // flushWork赋值给scheduledHostCallback，而hasTimeRemaining为true， currentTime为performance.now()
+          // 或者Date对象计算出的差值
           hasMoreWork = scheduledHostCallback(hasTimeRemaining, currentTime);
         } finally {
-          // ! 无论try语句模块成功与否以及hasMoreWork有没有被置为true，都是需要执行下列逻辑
+          // 无论try语句模块成功与否以及hasMoreWork有没有被置为true，都是需要执行下列逻辑
           if (hasMoreWork) {
             // If there's more work, schedule the next message event at the end of the preceding one.
             // 实际上在执行这行代码 port.postMessage(null); 然后继续执行自身 performWorkUntilDeadline()
@@ -686,14 +686,14 @@ if (process.env.NODE_ENV !== "production") {
       }
     }
 
-    // ! ===== 延迟执行callback (setTimeout执行) =====
+    // ===== 延迟执行callback (setTimeout执行) =====
     function requestHostTimeout(callback, ms) {
       taskTimeoutID = localSetTimeout(function () {
         callback(exports.unstable_now());
       }, ms);
     }
 
-    // ! ===== 取消延迟执行callback的定时器 =====
+    // ===== 取消延迟执行callback的定时器 =====
     function cancelHostTimeout() {
       localClearTimeout(taskTimeoutID);
       taskTimeoutID = -1;
